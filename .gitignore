@@ -1,0 +1,12 @@
+.bloop
+.metals
+lib/FitSdk/.settings
+lib/FitSdk/.classpath
+lib/FitSdk/.project
+
+target
+
+*.class
+gc-core/lib/FitSdk/.settings
+gc-core/lib/FitSdk/.classpath
+gc-core/lib/FitSdk/.project
