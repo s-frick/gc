@@ -10,3 +10,13 @@ target
 gc-core/lib/FitSdk/.settings
 gc-core/lib/FitSdk/.classpath
 gc-core/lib/FitSdk/.project
+.settings
+gc-app/.classpath
+gc-app/.project
+gc-core-api/.classpath
+gc-core-api/.project
+gc-json-api/.classpath
+gc-json-api/.project
+gc-main/.classpath
+gc-main/.project
+.project
