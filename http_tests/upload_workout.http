@@ -1,5 +1,5 @@
 ### upload
-@file=example.fit
+@file=Bemer_Cyclassics.fit
 POST http://localhost:8080/api/v1/upload-workout
 Content-Type: multipart/form-data; boundary=FitFile
 
