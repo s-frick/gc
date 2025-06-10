@@ -4,9 +4,13 @@ import scala.compiletime.ops.float
 
 case class RideSample(
   timestamp: Long,
+  speed: Option[Float],
   heartRate: Option[Int],
   power:     Option[Int],
-  cadence:   Option[Int]
+  cadence:   Option[Int],
+  distance: Option[Float],
+  positionLat: Option[Int],
+  positionLong: Option[Int],
 )
 
 case class FileID(

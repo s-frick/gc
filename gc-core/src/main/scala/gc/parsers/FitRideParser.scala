@@ -43,20 +43,20 @@ class FitListener extends FileIdMesgListener, UserProfileMesgListener, DeviceInf
   override def onMesg(msg: FileIdMesg): Unit = {
     fileId = Some(FileID(
       f_type         =  msg.getType.name,
-      manufacturer   =  msg.getManufacturer.toInt,
-      product        =  msg.getProduct.toInt,
       product_name   =  msg.getProductName,
-      serial_number  =  msg.getSerialNumber.toLong,
-      number         =  msg.getNumber.toInt
+      number         =  msg.getNumber.toInt,
+      product        =  msg.getProduct.toInt,
+      manufacturer   =  msg.getManufacturer.toInt,
+      serial_number  =  msg.getSerialNumber.toLong
     ))
   }
 
   override def onMesg(msg: UserProfileMesg): Unit = {
     userProfile = Some(UserProfile(
-      friendly_name = msg.getFriendlyName,
-      gender = msg.getGender.name,
-      age = msg.getAge.toInt,
-      weight = msg.getWeight.toFloat
+      friendly_name  =  msg.getFriendlyName,
+      gender         =  msg.getGender.name,
+      weight         =  msg.getWeight.toFloat,
+      age            =  msg.getAge.toInt
     ))
   }
 
@@ -65,11 +65,16 @@ class FitListener extends FileIdMesgListener, UserProfileMesgListener, DeviceInf
       .map(_.getTimestamp)              // seconds since 1989-12-31
       .map(_ + 631065600L)              // convert to UNIX epoch
       .getOrElse(0L)
+      
     val sample = RideSample(
-        timestamp = timestamp,
-        power     = Option(msg.getPower).map(_.toInt),
-        heartRate = Option(msg.getHeartRate).map(_.toInt),
-        cadence   = Option(msg.getCadence).map(_.toInt)
+      timestamp     =  timestamp,
+      power         =  Option(msg.getPower).map(_.toInt),
+      cadence       =  Option(msg.getCadence).map(_.toInt),
+      speed         =  Option(msg.getSpeed).map(_.toFloat),
+      heartRate     =  Option(msg.getHeartRate).map(_.toInt),
+      distance      =  Option(msg.getDistance).map(_.toFloat),
+      positionLat   =  Option(msg.getPositionLat).map(_.toInt),
+      positionLong  =  Option(msg.getPositionLong).map(_.toInt)
     )
 
     samples += sample
