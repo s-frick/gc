@@ -27,10 +27,14 @@ class WorkoutAnalyzerImpl extends WorkoutAnalyzer {
 
   def toJava(sample: RideSample): rocks.frick.gc.RideSample = {
     new rocks.frick.gc.RideSample(
-      timestamp   =  sample.timestamp,
-      cadence     =  sample.cadence.getOrElse(0),
-      power       =  sample.power.getOrElse(0),
-      heart_rate  =  sample.heartRate.getOrElse(0)
+      timestamp     =  sample.timestamp,
+      speed         =  sample.speed.getOrElse(0),
+      power         =  sample.power.getOrElse(0),
+      cadence       =  sample.cadence.getOrElse(0),
+      heart_rate    =  sample.heartRate.getOrElse(0),
+      distance      =  sample.distance.getOrElse(0.0f),
+      positionLat   =  sample.positionLat.getOrElse(0),
+      positionLong  =  sample.positionLong.getOrElse(0)
     )
   }
 
