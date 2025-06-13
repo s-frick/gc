@@ -3,6 +3,7 @@ import "./App.css";
 import { Button } from "./components/ui/button";
 import { ChartAreaGradient } from "./components/ui/chart-area-gradient";
 import { WorkoutList } from "./components/ui/workout-list";
+import { FileUploader } from "./components/file-uploader";
 
 export type WorkoutSample = {
   heart_rate: number;
@@ -45,7 +46,7 @@ function App() {
       ) : (
         <p>Please select a workout to view the chart.</p>
       )}
-      <Button>Click me</Button>
+      <FileUploader />
 
       <WorkoutList
         selected={selectedWorkoutId}
