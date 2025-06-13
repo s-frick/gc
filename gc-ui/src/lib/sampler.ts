@@ -1,24 +1,60 @@
-import { LTTB } from 'downsample';
 
-type X = number;
-type Value = number;
-type TupleDataPoint = [X, Value];
-interface XYDataPoint {
-  x: X;
-  y: Value;
-}
-type DataPoint = TupleDataPoint | XYDataPoint;
-type Indexable<T> = {
-  length: number;
-  [index: number]: T;
+export type DataPoint2 = {
+  speed: number;
+  distance: number;
+  heart_rate: number;
+  power: number;
+  cadence: number;
+  timestamp: number;
+  // int    positionLat,
+  // int    positionLong
 };
 
-export function sampleData<T extends Record<string, number>>(data: T[], maxPoints: number, keys: string[]): { [x: string]: Array<XYDataPoint> } {
-  console.log(data)
-  return keys.map(key => {
-    const aspect = data.map(e => ({ x: e['timestamp'], y: e[key] }))
-    return { [key]: [...LTTB(aspect, maxPoints)] };
-  }).reduce((acc, aspect) => {
-    return { ...acc, ...aspect };
-  }, {})
+export function lttbDownsample(data: DataPoint2[], threshold: number, key: keyof DataPoint2): DataPoint2[] {
+  const dataLength = data.length;
+  if (threshold >= dataLength || threshold === 0) return data;
+
+  const sampled: DataPoint2[] = [];
+  const bucketSize = (dataLength - 2) / (threshold - 2);
+
+  let a = 0;
+  sampled.push(data[a]);
+
+  for (let i = 0; i < threshold - 2; i++) {
+    const start = Math.floor((i + 1) * bucketSize) + 1;
+    const end = Math.floor((i + 2) * bucketSize) + 1;
+    const range = data.slice(start, Math.min(end, dataLength));
+
+    // Durchschnittswerte im Bucket
+    const avgX = range.reduce((sum, p) => sum + p.timestamp, 0) / range.length;
+    const avgY = range.reduce((sum, p) => sum + p[key], 0) / range.length;
+
+    const pointA = data[a];
+    const rangeOffs = Math.floor(i * bucketSize) + 1;
+    const rangeTo = Math.floor((i + 1) * bucketSize) + 1;
+    const bucket = data.slice(rangeOffs, Math.min(rangeTo, dataLength));
+
+    let maxArea = -1;
+    let nextA = 0;
+
+    for (let j = 0; j < bucket.length; j++) {
+      const point = bucket[j];
+
+      const area = Math.abs(
+        (pointA.timestamp - avgX) * (point[key] - pointA[key]) -
+        (pointA.timestamp - point.timestamp) * (avgY - pointA[key])
+      ) * 0.5;
+
+      if (area > maxArea) {
+        maxArea = area;
+        nextA = rangeOffs + j;
+      }
+    }
+
+    sampled.push(data[nextA]);
+    a = nextA;
+  }
+
+  sampled.push(data[dataLength - 1]);
+  return sampled;
 }
