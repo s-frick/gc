@@ -14,6 +14,7 @@ type Indexable<T> = {
 };
 
 export function sampleData<T extends Record<string, number>>(data: T[], maxPoints: number, keys: string[]): { [x: string]: Array<XYDataPoint> } {
+  console.log(data)
   return keys.map(key => {
     const aspect = data.map(e => ({ x: e['timestamp'], y: e[key] }))
     return { [key]: [...LTTB(aspect, maxPoints)] };
