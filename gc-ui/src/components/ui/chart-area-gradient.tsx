@@ -17,11 +17,8 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { useEffect, useState } from "react";
 import type { WorkoutSample } from "@/App";
-import { sampleData } from "@/lib/sampler";
-import { sma } from "@/lib/sma";
-import { createSMA, SMA } from "downsample";
+import { lttbDownsample } from "@/lib/sampler";
 
 export const description = "An area chart with gradient fill";
 
@@ -45,159 +42,213 @@ const chartConfig = {
   y: {
     label: "Herzfrequenz",
   },
-  desktop: {
-    label: "Desktop",
+  heart_rate: {
+    label: "Herzfrequenz",
     color: "var(--chart-1)",
   },
-  mobile: {
-    label: "Mobile",
+  speed: {
+    label: "Geschwindigkeit",
     color: "var(--chart-2)",
+  },
+  power: {
+    label: "Leistung",
+    color: "var(--chart-3)",
+  },
+  cadence: {
+    label: "Trittfrequenz",
+    color: "var(--chart-5)",
   },
 } satisfies ChartConfig;
 
 type ChartAreaGradientProps = {
   workoutId: string;
   workout: WorkoutSample[];
+  show: {
+    power: boolean;
+    cadence: boolean;
+    heart_rate: boolean;
+    speed: boolean;
+  }
 };
 
-function mergeData(data: { [k: string]: Array<{ x: number; y: number; }> }) {
-  console.time('merging data')
-  const seenX = new Set<number>();
-  const result = [];
-  for (const key in data) {
-    for (const p in data[key]) {
-      const point = data[key][p];
-      if (point.x && !seenX.has(point.x)) {
-        let collector: { [k: string]: number } = { x: point.x };
-        for (const k in data) {
-          if (data?.[k]?.[p]?.y)
-            collector[k] = data[k][p].y
-        }
-        result.push(collector);
-        seenX.add(point.x);
-      } else if (point.x && seenX.has(point.x)) {
-        result.filter(p => p.x === point.x)[0][key] = point.y;
-      } else {
-        console.warn('No point.x found for:', point);
-      }
-    }
-  }
-  const sorted = result.sort((a, b) => a.x - b.x);
-  console.timeEnd('merging data')
-  return sorted;
-}
 
-  
+
 export function ChartAreaGradient({
-  workout,
-  workoutId,
+  workout, show
 }: ChartAreaGradientProps) {
-  const [error, setError] = useState<string | null>(null);
-  const sampleSize = workout.length;
-  const mappedWorkout = workout.map(sample => ({...sample, speed: sample.speed*3.6}))
-  // const smooth = mappedWorkout.map(sample => ({...sample, speed: sma(sample.speed, 20)}))
-  const downsampled = sampleData(mappedWorkout, 1000, ["speed", "heart_rate", "power", "cadence", "distance", "positionLat", "positionLong"]) ;
-  // const smooth = { ...downsampled }
-  // console.log(downsampled, smooth)
-  const merged = mergeData(downsampled);
-  const clampedData = merged.map(d => ({
-    ...d,
-    speed: Math.max(d.speed, 5)
-  }))
+  let res = lttbDownsample(workout, 1000, 'power').map(s => ({ ...s, speed: s.speed * 3.6 }))
+  res = lttbDownsample(res, 1000, 'heart_rate')
 
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Bemer Cyclassics</CardTitle>
-      </CardHeader>
-      <CardDescription>Samples: {sampleSize}, Downsampled: {merged.length}</CardDescription>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
-          <AreaChart
-            accessibilityLayer
-            // data={workout.map(e => ({ x: e.timestamp, y: e.heart_rate }))}
-            data={clampedData}
-            // data={downsampled.cadence}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
-          >
-            <CartesianGrid vertical={true} />
-            <XAxis
-              dataKey="x"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-            // tickFormatter={(value) => value.slice(0, 3)}
+    <ChartContainer config={chartConfig}>
+      <AreaChart
+        accessibilityLayer
+        data={res}
+        margin={{
+          left: 12,
+          right: 12,
+        }}
+      >
+        <CartesianGrid vertical={true} />
+        <XAxis
+          dataKey="x"
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          orientation="bottom"
+        />
+        <XAxis
+          dataKey="distance"
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+        />
+        <YAxis
+          yAxisId="speed"
+          orientation="left"
+          tickLine={false}
+          axisLine={false}
+          tickCount={8}
+          label={{
+            value: 'Geschwindigkeit km/h',
+            angle: -90,
+            position: 'insideLeft'
+          }}
+        />
+        <YAxis
+          yAxisId="heart_rate"
+          orientation="right"
+          tickLine={false}
+          axisLine={false}
+          tickCount={8}
+          label={{
+            value: 'Herzfrequenz bpm',
+            angle: -90,
+            position: 'insideRight'
+          }}
+        />
+        <YAxis
+          yAxisId="cadence"
+          domain={[40, 120]}
+          orientation="right"
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          label={{
+            value: 'Trittfrequenz',
+            angle: -90,
+            position: 'insideRight'
+          }}
+        />
+        <YAxis
+          yAxisId="power"
+          orientation="left"
+          tickLine={false}
+          axisLine={false}
+          tickMargin={8}
+          label={{
+            value: 'Leistung W',
+            angle: -90,
+            position: 'insideLeft'
+          }}
+        />
+        <ChartTooltip cursor={true} content={<ChartTooltipContent indicator="line" />} />
+        <defs>
+          <linearGradient id="fillHeartrate" x1="0" y1="0" x2="0" y2="1">
+            <stop
+              offset="10%"
+              stopColor="var(--color-heart_rate)"
+              stopOpacity={0.6}
             />
-            <YAxis
-              yAxisId="speed"
-              domain={[10, 50]}
-              ticks={[10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 70]}
-              orientation="left"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
+            <stop
+              offset="90%"
+              stopColor="var(--color-heart_rate)"
+              stopOpacity={0.01}
             />
-            {/* <YAxis */}
-            {/*   yAxisId="heart_rate" */}
-            {/*   domain={[(dataMin:number) => dataMin -20, (dataMax: number) => dataMax + 5]} // TODO: UserProfile: resting HR-20 -> HRmax(max 220) */}
-            {/*   ticks={[100, 120, 140, 160, 180, 200]} */}
-            {/*   orientation="right" */}
-            {/*   tickLine={false} */}
-            {/*   axisLine={false} */}
-            {/*   tickMargin={8} */}
-            {/* /> */}
-            <ChartTooltip cursor={true} content={<ChartTooltipContent indicator="line" />} />
-            <defs>
-              <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="10%"
-                  stopColor="var(--color-desktop)"
-                  stopOpacity={0.6}
-                />
-                <stop
-                  offset="90%"
-                  stopColor="var(--color-desktop)"
-                  stopOpacity={0.01}
-                />
-              </linearGradient>
-              <linearGradient id="fillMobile" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-mobile)"
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-mobile)"
-                  stopOpacity={0.1}
-                />
-              </linearGradient>
-            </defs>
-            <Area
-              yAxisId="speed"
-              dataKey="speed"
-              type="natural"
-              fill="url(#fillMobile)"
-              fillOpacity={0.4}
-              stroke="var(--color-mobile)"
+          </linearGradient>
+          <linearGradient id="fillSpeed" x1="0" y1="0" x2="0" y2="1">
+            <stop
+              offset="10%"
+              stopColor="var(--color-speed)"
+              stopOpacity={0.6}
             />
-            {/* <Area */}
-            {/*   yAxisId="heart_rate" */}
-            {/*   dataKey="heart_rate" */}
-            {/*   baseLine={8} */}
-            {/*   type="natural" */}
-            {/*   fill="url(#fillDesktop)" */}
-            {/*   fillOpacity={0.5} */}
-            {/*   stroke="var(--color-desktop)" */}
-            {/* /> */}
-          </AreaChart>
-        </ChartContainer>
-      </CardContent>
-      <CardFooter></CardFooter>
-    </Card>
+            <stop
+              offset="90%"
+              stopColor="var(--color-speed)"
+              stopOpacity={0.01}
+            />
+          </linearGradient>
+          <linearGradient id="fillCadence" x1="0" y1="0" x2="0" y2="1">
+            <stop
+              offset="10%"
+              stopColor="var(--color-cadence)"
+              stopOpacity={0.6}
+            />
+            <stop
+              offset="90%"
+              stopColor="var(--color-cadence)"
+              stopOpacity={0.01}
+            />
+          </linearGradient>
+          <linearGradient id="fillPower" x1="0" y1="0" x2="0" y2="1">
+            <stop
+              offset="10%"
+              stopColor="var(--color-power)"
+              stopOpacity={0.6}
+            />
+            <stop
+              offset="90%"
+              stopColor="var(--color-power)"
+              stopOpacity={0.01}
+            />
+          </linearGradient>
+        </defs>
+        {show.heart_rate && (
+          <Area
+            dataKey="heart_rate"
+            yAxisId="heart_rate"
+            type="natural"
+            fill="url(#fillHeartrate)"
+            fillOpacity={0.5}
+            stroke="var(--color-heart_rate)"
+            stackId="a"
+          />
+        )}
+        {show.speed && (
+          <Area
+            dataKey="speed"
+            yAxisId="speed"
+            type="natural"
+            fill="url(#fillSpeed)"
+            fillOpacity={0.4}
+            stroke="var(--color-speed)"
+            stackId="a"
+          />
+        )}
+        {show.cadence && (
+          <Area
+            dataKey="cadence"
+            yAxisId="cadence"
+            type="natural"
+            fill="url(#fillCadence)"
+            fillOpacity={0.4}
+            stroke="var(--color-cadence)"
+            stackId="a"
+          />
+        )}
+        {show.power && (
+          <Area
+            dataKey="power"
+            yAxisId="power"
+            type="natural"
+            fill="url(#fillPower)"
+            fillOpacity={0.4}
+            stroke="var(--color-power)"
+            stackId="a"
+          />
+        )}
+      </AreaChart>
+    </ChartContainer>
   );
 }
