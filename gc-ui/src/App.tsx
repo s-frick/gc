@@ -4,14 +4,17 @@ import { ChartAreaGradient } from "./components/ui/chart-area-gradient";
 import { WorkoutList } from "./components/ui/workout-list";
 import { FileUploader } from "./components/file-uploader";
 import { SwitchWithLabel } from "./components/switch-with-label";
+import GpsMap from "./components/gps-map";
 
 export type WorkoutSample = {
-  speed: number;
-  distance: number;
-  heart_rate: number;
-  power: number;
-  cadence: number;
+  speed?: number;
+  distance?: number;
+  heart_rate?: number;
+  power?: number;
+  cadence?: number;
   timestamp: number;
+  positionLat?: number,
+  positionLong?: number
 };
 
 function App() {
@@ -47,7 +50,7 @@ function App() {
   }, [selectedWorkoutId]);
 
   return (
-    <div className="flex min-h-svh flex-col gap-4">
+    <div className="flex min-h-svh flex-col gap-4 px-2 sm:px-4 lg:px-6 xl:px-8 2xl:px-12">
       <p>{selectedWorkoutId}</p>
       <div className="flex flex-wrap gap-4 justify-center">
         <SwitchWithLabel id="power" checked={toggles.power} label="Leistung" onCheckedChange={setToggle("power")}></SwitchWithLabel>
@@ -57,13 +60,27 @@ function App() {
       </div>
 
       {selectedWorkoutId ? (
-        <ChartAreaGradient
-          workout={workout}
-          workoutId={selectedWorkoutId}
-          show={toggles}
-        ></ChartAreaGradient>
+        <div className="flex flex-col lg:flex-row gap-4 px-4">
+          {/* Linke Spalte: Diagramme */}
+          <div className="lg:w-2/3 w-full">
+            <ChartAreaGradient
+              workout={workout}
+              workoutId={selectedWorkoutId}
+              show={toggles}
+            />
+          </div>
+
+          {/* Rechte Spalte: Karte */}
+          <div className="lg:w-1/3 w-full">
+            <GpsMap
+              gps={workout
+                .filter(w => typeof w.positionLat === "number" && typeof w.positionLong === "number")
+                .map(w => [w.positionLat, w.positionLong] as [number, number])}
+            />
+          </div>
+        </div>
       ) : (
-        <p>Please select a workout to view the chart.</p>
+        <p>Please select a workout...</p>
       )}
       <FileUploader />
 
@@ -71,7 +88,7 @@ function App() {
         selected={selectedWorkoutId}
         onSelectWorkout={setSelectedWorkoutId}
       ></WorkoutList>
-    </div>
+    </div >
   );
 }
 

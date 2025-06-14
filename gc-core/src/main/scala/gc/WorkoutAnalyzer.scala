@@ -33,8 +33,8 @@ class WorkoutAnalyzerImpl extends WorkoutAnalyzer {
       cadence       =  sample.cadence.getOrElse(0),
       heart_rate    =  sample.heartRate.getOrElse(0),
       distance      =  sample.distance.getOrElse(0.0f),
-      positionLat   =  sample.positionLat.getOrElse(0),
-      positionLong  =  sample.positionLong.getOrElse(0)
+      positionLat   =  sample.positionLat.getOrElse(0.0f),
+      positionLong  =  sample.positionLong.getOrElse(0.0f)
     )
   }
 
