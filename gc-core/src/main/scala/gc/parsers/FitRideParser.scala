@@ -73,11 +73,15 @@ class FitListener extends FileIdMesgListener, UserProfileMesgListener, DeviceInf
       speed         =  Option(msg.getSpeed).map(_.toFloat),
       heartRate     =  Option(msg.getHeartRate).map(_.toInt),
       distance      =  Option(msg.getDistance).map(_.toFloat),
-      positionLat   =  Option(msg.getPositionLat).map(_.toInt),
-      positionLong  =  Option(msg.getPositionLong).map(_.toInt)
+      positionLat   =  Option(msg.getPositionLat).map(toDecimalDegrees _),
+      positionLong  =  Option(msg.getPositionLong).map(toDecimalDegrees _)
     )
 
     samples += sample
+  }
+
+  def toDecimalDegrees(x: Integer): Float = {
+    (x * (180 / Math.pow(2, 31))).toFloat
   }
 
   override def onDescription(msg: DeveloperFieldDescription): Unit = ()

@@ -16,13 +16,12 @@ package rocks.frick.gc;
  *                   if unavailable.
  */
 public record RideSample(
-    long   timestamp,
-    float  speed,
-    float  distance,
-    int    heart_rate,
-    int    power,
-    int    cadence,
-    int    positionLat,
-    int    positionLong
-)
-{}
+    long timestamp,
+    float speed,
+    float distance,
+    int heart_rate,
+    int power,
+    int cadence,
+    float positionLat,
+    float positionLong) {
+}

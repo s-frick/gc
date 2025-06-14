@@ -9,8 +9,8 @@ case class RideSample(
   power:     Option[Int],
   cadence:   Option[Int],
   distance: Option[Float],
-  positionLat: Option[Int],
-  positionLong: Option[Int],
+  positionLat: Option[Float],
+  positionLong: Option[Float],
 )
 
 case class FileID(
