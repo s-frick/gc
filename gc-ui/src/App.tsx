@@ -22,6 +22,7 @@ function App() {
     null,
   );
   const [workout, setWorkout] = useState<WorkoutSample[]>([]);
+  const [hoveredGps, setHoveredGps] = useState<[number, number] | null>(null);
   const [error, setError] = useState(null);
   const [toggles, setToggles] = useState({
     power: true,
@@ -41,7 +42,6 @@ function App() {
           return res.json();
         })
         .then((data: { samples: WorkoutSample[] }) => {
-          console.log("First data point", data.samples[0]);
           setWorkout(data.samples);
         })
         .catch((err) => {
@@ -53,10 +53,10 @@ function App() {
     <div className="flex min-h-svh flex-col gap-4 px-2 sm:px-4 lg:px-6 xl:px-8 2xl:px-12">
       <p>{selectedWorkoutId}</p>
       <div className="flex flex-wrap gap-4 justify-center">
-        <SwitchWithLabel id="power" checked={toggles.power} label="Leistung" onCheckedChange={setToggle("power")}></SwitchWithLabel>
-        <SwitchWithLabel id="cadence" checked={toggles.cadence} label="Trittfrequenz" onCheckedChange={setToggle("cadence")}></SwitchWithLabel>
-        <SwitchWithLabel id="heart_rate" checked={toggles.heart_rate} label="Herzfrequenz" onCheckedChange={setToggle("heart_rate")}></SwitchWithLabel>
-        <SwitchWithLabel id="speed" checked={toggles.speed} label="Geschwindigkeit" onCheckedChange={setToggle("speed")}></SwitchWithLabel>
+        <SwitchWithLabel id="power" className="data-[state=checked]:bg-[var(--chart-3)]" checked={toggles.power} label="Leistung" onCheckedChange={setToggle("power")}></SwitchWithLabel>
+        <SwitchWithLabel id="cadence" className="data-[state=checked]:bg-[var(--chart-5)]" checked={toggles.cadence} label="Trittfrequenz" onCheckedChange={setToggle("cadence")}></SwitchWithLabel>
+        <SwitchWithLabel id="heart_rate" className="data-[state=checked]:bg-[var(--chart-1)]" checked={toggles.heart_rate} label="Herzfrequenz" onCheckedChange={setToggle("heart_rate")}></SwitchWithLabel>
+        <SwitchWithLabel id="speed" className="data-[state=checked]:bg-[var(--chart-2)]" checked={toggles.speed} label="Geschwindigkeit" onCheckedChange={setToggle("speed")}></SwitchWithLabel>
       </div>
 
       {selectedWorkoutId ? (
@@ -67,6 +67,7 @@ function App() {
               workout={workout}
               workoutId={selectedWorkoutId}
               show={toggles}
+              onHoverGps={setHoveredGps}
             />
           </div>
 
@@ -76,6 +77,7 @@ function App() {
               gps={workout
                 .filter(w => typeof w.positionLat === "number" && typeof w.positionLong === "number")
                 .map(w => [w.positionLat, w.positionLong] as [number, number])}
+              currentPos={hoveredGps}
             />
           </div>
         </div>

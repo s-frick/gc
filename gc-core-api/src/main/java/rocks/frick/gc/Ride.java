@@ -19,7 +19,9 @@ import java.util.List;
  *                     (e.g., weight, FTP, max HR).
  */
 public record Ride(
+  String            id,
   List<RideSample>  samples,       
+  String            name,
   String            source,        
   FileID            file_id,       
   UserProfile       user_profile)  

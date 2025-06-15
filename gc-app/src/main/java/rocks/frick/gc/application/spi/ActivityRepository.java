@@ -1,4 +1,4 @@
-package rocks.frick.gc.application.port;
+package rocks.frick.gc.application.spi;
 
 import java.util.List;
 
@@ -6,7 +6,7 @@ import rocks.frick.gc.Pageable;
 import rocks.frick.gc.Ride;
 import rocks.frick.gc.application.dto.FileIDTo;
 
-public interface WorkoutRepository {
+public interface ActivityRepository {
 
   /**
    * Saves a workout to the repository.
@@ -32,4 +32,6 @@ public interface WorkoutRepository {
   void deleteById(String id);
 
   List<FileIDTo> findAll(Pageable page);
+
+  void updateActivityName(String id, String newName);
 }

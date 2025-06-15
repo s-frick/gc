@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { lttbDownsample, type DataPoint2 } from './sampler.ts'; // deine Implementierung
+import { lttbDownsample } from './sampler.ts'; // deine Implementierung
+import type { WorkoutSample } from '@/App.tsx';
 
 type Point = { x: number; y: number };
 
-function generateSampleData(count: number): DataPoint2[] {
+function generateSampleData(count: number): WorkoutSample[] {
   return Array.from({ length: count }, (_, i) => ({
     heart_rate: 120 + Math.sin(i / 10) * 10,
     power: 200 + Math.sin(i / 5) * 50,

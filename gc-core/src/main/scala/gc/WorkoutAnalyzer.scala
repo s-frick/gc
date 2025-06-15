@@ -17,6 +17,8 @@ class WorkoutAnalyzerImpl extends WorkoutAnalyzer {
     val ride = parser.parseFromStream(dataStream)
 
     val j_ride: rocks.frick.gc.Ride = new rocks.frick.gc.Ride(
+      id = null,
+      name = null,
       samples = ride.samples.map { toJava _ }.asJava,
       source = ride.source,
       file_id = toJava(ride.fileID),
