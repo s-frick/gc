@@ -1,16 +1,7 @@
 "use client";
 
-import { TrendingUp } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import {
   type ChartConfig,
   ChartContainer,
@@ -19,6 +10,7 @@ import {
 } from "@/components/ui/chart";
 import type { WorkoutSample } from "@/App";
 import { lttbDownsample } from "@/lib/sampler";
+import type { CategoricalChartState } from "recharts/types/chart/types";
 
 export const description = "An area chart with gradient fill";
 
@@ -68,16 +60,33 @@ type ChartAreaGradientProps = {
     cadence: boolean;
     heart_rate: boolean;
     speed: boolean;
-  }
+  };
+  onHoverGps: (gps: [number, number] | null) => void;
 };
 
 
 
 export function ChartAreaGradient({
-  workout, show
+  workout, show, onHoverGps
 }: ChartAreaGradientProps) {
-  let res = lttbDownsample(workout, 1000, 'power').map(s => ({ ...s, speed: s.speed * 3.6 }))
-  res = lttbDownsample(res, 1000, 'heart_rate')
+  console.time('lttb')
+  let res = lttbDownsample(workout, 1500, 'heart_rate').map(s => ({ ...s, speed: (s?.speed ?? 0) * 3.6 } as WorkoutSample))
+  console.timeEnd('lttb')
+  // res = lttbDownsample(res, 1000, 'heart_rate')
+
+  const handleMouseMove = (state: CategoricalChartState) => {
+    if (state && state.activeTooltipIndex != null) {
+      const sample = res[state.activeTooltipIndex];
+      if (sample.positionLat != null && sample.positionLong != null) {
+        onHoverGps?.([sample.positionLat, sample.positionLong]);
+      } else {
+        onHoverGps?.(null);
+      }
+    } else {
+      onHoverGps?.(null);
+    }
+  }
+
 
 
   return (
@@ -85,6 +94,8 @@ export function ChartAreaGradient({
       <AreaChart
         accessibilityLayer
         data={res}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => onHoverGps?.(null)}
         margin={{
           left: 12,
           right: 12,

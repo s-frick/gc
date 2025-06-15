@@ -1,3 +1,4 @@
+import type { WorkoutSample } from "@/App";
 
 export type DataPoint2 = {
   speed: number;
@@ -10,11 +11,11 @@ export type DataPoint2 = {
   // int    positionLong
 };
 
-export function lttbDownsample(data: DataPoint2[], threshold: number, key: keyof DataPoint2): DataPoint2[] {
+export function lttbDownsample(data: WorkoutSample[], threshold: number, key: keyof WorkoutSample): WorkoutSample[] {
   const dataLength = data.length;
   if (threshold >= dataLength || threshold === 0) return data;
 
-  const sampled: DataPoint2[] = [];
+  const sampled: WorkoutSample[] = [];
   const bucketSize = (dataLength - 2) / (threshold - 2);
 
   let a = 0;
@@ -27,7 +28,7 @@ export function lttbDownsample(data: DataPoint2[], threshold: number, key: keyof
 
     // Durchschnittswerte im Bucket
     const avgX = range.reduce((sum, p) => sum + p.timestamp, 0) / range.length;
-    const avgY = range.reduce((sum, p) => sum + p[key], 0) / range.length;
+    const avgY = range.reduce((sum, p) => sum + (p?.[key] ?? 0), 0) / range.length;
 
     const pointA = data[a];
     const rangeOffs = Math.floor(i * bucketSize) + 1;
@@ -41,8 +42,8 @@ export function lttbDownsample(data: DataPoint2[], threshold: number, key: keyof
       const point = bucket[j];
 
       const area = Math.abs(
-        (pointA.timestamp - avgX) * (point[key] - pointA[key]) -
-        (pointA.timestamp - point.timestamp) * (avgY - pointA[key])
+        (pointA.timestamp - avgX) * ((point?.[key] ?? 0) - (pointA?.[key] ?? 0)) -
+        (pointA.timestamp - point.timestamp) * (avgY - (pointA?.[key] ?? 0))
       ) * 0.5;
 
       if (area > maxArea) {

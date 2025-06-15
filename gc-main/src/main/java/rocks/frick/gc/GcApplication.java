@@ -13,11 +13,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 import gc.WorkoutAnalyzerImpl;
-import rocks.frick.gc.application.GetFullWorkoutService;
-import rocks.frick.gc.application.ListWorkoutsService;
-import rocks.frick.gc.application.UploadWorkoutService;
+import rocks.frick.gc.application.GetFullActivityService;
+import rocks.frick.gc.application.ListActivityService;
+import rocks.frick.gc.application.UpdateActivityNameService;
+import rocks.frick.gc.application.UploadActivityService;
 import rocks.frick.gc.application.dto.FileIDTo;
-import rocks.frick.gc.application.port.WorkoutRepository;
+import rocks.frick.gc.application.spi.ActivityRepository;
 
 /**
  * Main entry point for the GoldenCheetah Core Spring Boot application.
@@ -32,21 +33,21 @@ public class GcApplication {
   }
 
   @Bean
-  public static UploadWorkoutService uploadWorkoutService(
-      WorkoutRepository workoutRepository, WorkoutAnalyzer analyzer) {
-    return new UploadWorkoutService(workoutRepository, analyzer);
+  public static UploadActivityService uploadWorkoutService(
+      ActivityRepository workoutRepository, WorkoutAnalyzer analyzer) {
+    return new UploadActivityService(workoutRepository, analyzer);
   }
 
   @Bean
-  public static ListWorkoutsService listWorkoutsService(
-      WorkoutRepository workoutRepository) {
-    return new ListWorkoutsService(workoutRepository);
+  public static ListActivityService listWorkoutsService(
+      ActivityRepository workoutRepository) {
+    return new ListActivityService(workoutRepository);
   }
 
   @Bean
-  public static GetFullWorkoutService getFullWorkoutService(
-      WorkoutRepository workoutRepository) {
-    return new GetFullWorkoutService(workoutRepository);
+  public static GetFullActivityService getFullWorkoutService(
+      ActivityRepository workoutRepository) {
+    return new GetFullActivityService(workoutRepository);
   }
 
   @Bean
@@ -55,21 +56,39 @@ public class GcApplication {
   }
 
   @Bean
-  public static WorkoutRepository workoutRepository() {
-    return new WorkoutRepository() {
+  public static UpdateActivityNameService updateActivityNameService(ActivityRepository activityRepository) {
+    return new UpdateActivityNameService(activityRepository);
+  }
+
+  @Bean
+  public static ActivityRepository workoutRepository() {
+    return new ActivityRepository() {
       private final Map<String, Ride> rides = new HashMap<>();
 
       @Override
       public String save(Ride workout) {
-        var id = UUID.randomUUID().toString();
-        rides.put(id, workout);
-        log.info("Saved workouts: {}", rides.values().stream().map(Ride::file_id).toList());
-        return id;
+        var w = workout.id() == null 
+          ? new Ride(
+            UUID.randomUUID().toString(),
+            workout.samples(),       
+            workout.name(),
+            workout.source(),        
+            workout.file_id(),
+            workout.user_profile()
+          ) : workout;
+
+        rides.put(w.id(), w);
+        log.info("Saved workouts: {}", rides.values().stream().map(Ride::name).toList());
+        return w.id();
       }
 
       @Override
       public Ride findById(String id) {
         var ride = rides.get(id);
+        if (ride == null) {
+          log.warn("Workout with ID {} not found", id);
+          return null;
+        }
         log.debug("Finding workout by ID: {} - {}", id, ride.file_id());
         return ride;
       }
@@ -84,8 +103,22 @@ public class GcApplication {
         return rides.entrySet().stream()
             .skip(page.page() * page.size())
             .limit(page.size())
-            .map(e -> new FileIDTo(e.getKey(), e.getValue().file_id()))
+            .map(e -> new FileIDTo(e.getKey(), e.getValue().name(), e.getValue().file_id()))
             .toList();
+      }
+
+      @Override
+      public void updateActivityName(String id, String newName) {
+        var activity = findById(id);
+        log.debug("Updating name of activity with ID {} to '{}'", id, newName);
+        save(new Ride(
+            activity.id(),
+            activity.samples(),
+            newName,
+            activity.source(),
+            activity.file_id(),
+            activity.user_profile()
+        ));
       }
 
     };

@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,9 +21,10 @@ import org.springframework.web.multipart.MultipartFile;
 import jakarta.websocket.server.PathParam;
 import rocks.frick.gc.Pageable;
 import rocks.frick.gc.Ride;
-import rocks.frick.gc.application.GetFullWorkoutService;
-import rocks.frick.gc.application.ListWorkoutsService;
-import rocks.frick.gc.application.UploadWorkoutService;
+import rocks.frick.gc.application.GetFullActivityService;
+import rocks.frick.gc.application.ListActivityService;
+import rocks.frick.gc.application.UpdateActivityNameService;
+import rocks.frick.gc.application.UploadActivityService;
 import rocks.frick.gc.application.dto.FileIDTo;
 
 @RestController
@@ -31,14 +33,17 @@ public class UploadWorkoutController {
 
   private static final Logger log = LoggerFactory.getLogger(UploadWorkoutController.class);
 
-  private final UploadWorkoutService uploadWorkoutService;
-  private final ListWorkoutsService listWorkoutsService;
-  private final GetFullWorkoutService getFullWorkoutService;
+  private final UploadActivityService uploadWorkoutService;
+  private final ListActivityService listWorkoutsService;
+  private final GetFullActivityService getFullWorkoutService;
+  private final UpdateActivityNameService updateActivityNameService;
 
-  public UploadWorkoutController(UploadWorkoutService uploadWorkoutService, ListWorkoutsService listWorkoutsService, GetFullWorkoutService getFullWorkoutService) {
+  public UploadWorkoutController(UploadActivityService uploadWorkoutService, ListActivityService listWorkoutsService,
+      GetFullActivityService getFullWorkoutService, UpdateActivityNameService updateActivityNameService) {
     this.uploadWorkoutService = uploadWorkoutService;
     this.listWorkoutsService = listWorkoutsService;
     this.getFullWorkoutService = getFullWorkoutService;
+    this.updateActivityNameService = updateActivityNameService;
   }
 
   @PostMapping("/upload-workout")
@@ -50,7 +55,8 @@ public class UploadWorkoutController {
       return ResponseEntity.badRequest().body("Failed to read the uploaded file");
     }
 
-    String id = uploadWorkoutService.upload(inputStream);
+    var filename = file.getOriginalFilename();
+    String id = uploadWorkoutService.upload(inputStream, filename);
     return ResponseEntity.ok(format("Workout file uploaded successfully. ID: %s", id));
   }
 
@@ -62,6 +68,16 @@ public class UploadWorkoutController {
     return workout
         .map(ResponseEntity::ok)
         .orElseGet(() -> ResponseEntity.notFound().build());
+  }
+
+  record UpdateWorkoutNameRequest(String name) {}
+
+  // TODO: extract listWorkouts
+  @PostMapping("/workouts/{id}")
+  public ResponseEntity<Void> updateWorkoutName(@PathVariable String id, @RequestBody UpdateWorkoutNameRequest req) {
+    log.debug("Updating workout name by ID: {}", id);
+    updateActivityNameService.updateActivityName(id, req.name());
+    return ResponseEntity.noContent().build();
   }
 
   // TODO: extract listWorkouts
