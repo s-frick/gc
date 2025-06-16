@@ -141,7 +141,6 @@ export function ChartAreaGradient({
         />
         <YAxis
           yAxisId="cadence"
-          domain={[40, 120]}
           orientation="right"
           tickLine={false}
           axisLine={false}
