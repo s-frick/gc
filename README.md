@@ -8,8 +8,16 @@
 [Coursier Install Guide](https://get-coursier.io/docs/cli-installation)
 
 ## Build
-
-`./build`
+```
+mvn install:install-file \
+   -Dfile=gc-core/lib/FitSdk/fit.jar \
+   -DgroupId=com.garmin \
+   -DartifactId=fit \
+   -Dversion=21.124.0 \
+   -Dpackaging=jar \
+   -DgeneratePom=true
+```
+`./build.sh`
 
 ## Start Dev
 
