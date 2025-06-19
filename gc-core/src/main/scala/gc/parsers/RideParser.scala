@@ -1,15 +1,10 @@
 package gc.parsers
 
-import gc.model.{Ride}
+import gc.model.{Activity}
 import java.io.InputStream
 
 trait RideParser {
-  def parse(lines: List[String]): Ride = {
-    throw new UnsupportedOperationException("This parser doesn't support stream-based input")
-  }
-
-
-  def parseFromStream(inputStream: InputStream): Ride = {
+  def parseFromStream(inputStream: InputStream): Activity = {
     throw new UnsupportedOperationException("This parser doesn't support stream-based input")
   }
 }

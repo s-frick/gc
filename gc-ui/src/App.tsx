@@ -9,7 +9,7 @@ import GpsMap from "./components/gps-map";
 export type WorkoutSample = {
   speed?: number;
   distance?: number;
-  heart_rate?: number;
+  heartRate?: number;
   power?: number;
   cadence?: number;
   timestamp: number;
@@ -27,7 +27,7 @@ function App() {
   const [toggles, setToggles] = useState({
     power: true,
     cadence: true,
-    heart_rate: true,
+    heartRate: true,
     speed: true
   })
   const setToggle = (key: keyof typeof toggles) => (value: boolean) => {
@@ -42,6 +42,7 @@ function App() {
           return res.json();
         })
         .then((data: { samples: WorkoutSample[] }) => {
+          if (!data?.samples || !data?.samples.length || data?.samples?.length === 0) throw new Error("Fehler beim Laden");
           setWorkout(data.samples);
         })
         .catch((err) => {
@@ -55,7 +56,7 @@ function App() {
       <div className="flex flex-wrap gap-4 justify-center">
         <SwitchWithLabel id="power" className="data-[state=checked]:bg-[var(--chart-3)]" checked={toggles.power} label="Leistung" onCheckedChange={setToggle("power")}></SwitchWithLabel>
         <SwitchWithLabel id="cadence" className="data-[state=checked]:bg-[var(--chart-5)]" checked={toggles.cadence} label="Trittfrequenz" onCheckedChange={setToggle("cadence")}></SwitchWithLabel>
-        <SwitchWithLabel id="heart_rate" className="data-[state=checked]:bg-[var(--chart-1)]" checked={toggles.heart_rate} label="Herzfrequenz" onCheckedChange={setToggle("heart_rate")}></SwitchWithLabel>
+        <SwitchWithLabel id="heartRate" className="data-[state=checked]:bg-[var(--chart-1)]" checked={toggles.heartRate} label="Herzfrequenz" onCheckedChange={setToggle("heartRate")}></SwitchWithLabel>
         <SwitchWithLabel id="speed" className="data-[state=checked]:bg-[var(--chart-2)]" checked={toggles.speed} label="Geschwindigkeit" onCheckedChange={setToggle("speed")}></SwitchWithLabel>
       </div>
 
@@ -73,12 +74,14 @@ function App() {
 
           {/* Rechte Spalte: Karte */}
           <div className="lg:w-1/3 w-full">
-            <GpsMap
-              gps={workout
-                .filter(w => typeof w.positionLat === "number" && typeof w.positionLong === "number")
-                .map(w => [w.positionLat, w.positionLong] as [number, number])}
-              currentPos={hoveredGps}
-            />
+            {workout.length > 0 ? (
+              <GpsMap
+                gps={workout
+                  .filter(w => typeof w.positionLat === "number" && typeof w.positionLong === "number")
+                  .map(w => [w.positionLat, w.positionLong] as [number, number])}
+                currentPos={hoveredGps}
+              />
+            ) : <p>Keine GPS-Daten verfügbar</p>}
           </div>
         </div>
       ) : (

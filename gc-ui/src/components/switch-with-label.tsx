@@ -2,7 +2,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
 
-export function SwitchWithLabel({ label, id, checked, onCheckedChange, className }: { label: string, id: string, checked?: boolean, onCheckedChange: (c: boolean) => void, className?: string}) {
+export function SwitchWithLabel({ label, id, checked, onCheckedChange, className }: { label: string, id: string, checked?: boolean, onCheckedChange: (c: boolean) => void, className?: string }) {
   return (
     <div className="flex items-center space-x-2">
       <Switch

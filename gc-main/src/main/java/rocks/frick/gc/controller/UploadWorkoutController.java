@@ -1,6 +1,9 @@
-package rocks.frick.gc.infrastructure;
+package rocks.frick.gc.controller;
 
 import static java.lang.String.format;
+
+import static scala.jdk.javaapi.OptionConverters.*;
+import static scala.jdk.javaapi.CollectionConverters.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,14 +21,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import jakarta.websocket.server.PathParam;
-import rocks.frick.gc.Pageable;
-import rocks.frick.gc.Ride;
-import rocks.frick.gc.application.GetFullActivityService;
-import rocks.frick.gc.application.ListActivityService;
-import rocks.frick.gc.application.UpdateActivityNameService;
-import rocks.frick.gc.application.UploadActivityService;
-import rocks.frick.gc.application.dto.FileIDTo;
+import gc.model.Activity;
+import gc.Pageable;
+import gc.application.GetFullActivityService;
+import gc.application.ListActivityService;
+import gc.application.UpdateActivityNameService;
+import gc.application.UploadActivityService;
+import gc.model.FileID;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -56,21 +58,22 @@ public class UploadWorkoutController {
     }
 
     var filename = file.getOriginalFilename();
-    String id = uploadWorkoutService.upload(inputStream, filename);
-    return ResponseEntity.ok(format("Workout file uploaded successfully. ID: %s", id));
+    Activity ride = uploadWorkoutService.upload(inputStream, filename);
+    return ResponseEntity.ok(format("Workout file uploaded successfully. ID: %s", ride.id()));
   }
 
   // TODO: extract listWorkouts
   @GetMapping("/workouts/{id}")
-  public ResponseEntity<Ride> workoutById(@PathVariable String id) {
+  public ResponseEntity<Activity> workoutById(@PathVariable String id) {
     log.debug("Retrieving workout by ID: {}", id);
-    var workout = getFullWorkoutService.getFullWorkout(id);
+    var workout = toJava(getFullWorkoutService.getFullWorkout(id));
     return workout
         .map(ResponseEntity::ok)
         .orElseGet(() -> ResponseEntity.notFound().build());
   }
 
-  record UpdateWorkoutNameRequest(String name) {}
+  record UpdateWorkoutNameRequest(String name) {
+  }
 
   // TODO: extract listWorkouts
   @PostMapping("/workouts/{id}")
@@ -82,9 +85,13 @@ public class UploadWorkoutController {
 
   // TODO: extract listWorkouts
   @GetMapping("/workouts")
-  public ResponseEntity<List<FileIDTo>> getWorkouts() {
-    var workouts = listWorkoutsService.listWorkouts(Pageable.of(0, 10));
-    return ResponseEntity.ok(workouts);
+  public ResponseEntity<List<FileIdTo>> getWorkouts() {
+    var workouts = asJava(listWorkoutsService.listActivities(new Pageable(0, 10)));
+    return ResponseEntity.ok(
+      workouts.stream()
+        .flatMap(w -> FileIdTo.fromDomain(w.fileID(), w.id(), w.name()).stream())
+        .toList()
+    );
   }
 
 }

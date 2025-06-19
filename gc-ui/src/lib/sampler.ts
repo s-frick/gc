@@ -3,7 +3,7 @@ import type { WorkoutSample } from "@/App";
 export type DataPoint2 = {
   speed: number;
   distance: number;
-  heart_rate: number;
+  heartRate: number;
   power: number;
   cadence: number;
   timestamp: number;

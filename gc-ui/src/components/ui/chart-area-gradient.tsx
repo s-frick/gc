@@ -24,17 +24,17 @@ const chartData = [
 ];
 
 const samples = [
-  { timestamp: 1, cadence: 80, heart_rate: 120 },
-  { timestamp: 2, cadence: 85, heart_rate: 130 },
-  { timestamp: 3, cadence: 75, heart_rate: 140 },
-  { timestamp: 4, cadence: 80, heart_rate: 145 },
+  { timestamp: 1, cadence: 80, heartRate: 120 },
+  { timestamp: 2, cadence: 85, heartRate: 130 },
+  { timestamp: 3, cadence: 75, heartRate: 140 },
+  { timestamp: 4, cadence: 80, heartRate: 145 },
 ];
 
 const chartConfig = {
   y: {
     label: "Herzfrequenz",
   },
-  heart_rate: {
+  heartRate: {
     label: "Herzfrequenz",
     color: "var(--chart-1)",
   },
@@ -58,7 +58,7 @@ type ChartAreaGradientProps = {
   show: {
     power: boolean;
     cadence: boolean;
-    heart_rate: boolean;
+    heartRate: boolean;
     speed: boolean;
   };
   onHoverGps: (gps: [number, number] | null) => void;
@@ -70,9 +70,9 @@ export function ChartAreaGradient({
   workout, show, onHoverGps
 }: ChartAreaGradientProps) {
   console.time('lttb')
-  let res = lttbDownsample(workout, 1500, 'heart_rate').map(s => ({ ...s, speed: (s?.speed ?? 0) * 3.6 } as WorkoutSample))
+  let res = lttbDownsample(workout, 1500, 'heartRate').map(s => ({ ...s, speed: (s?.speed ?? 0) * 3.6 } as WorkoutSample))
   console.timeEnd('lttb')
-  // res = lttbDownsample(res, 1000, 'heart_rate')
+  // res = lttbDownsample(res, 1000, 'heartRate')
 
   const handleMouseMove = (state: CategoricalChartState) => {
     if (state && state.activeTooltipIndex != null) {
@@ -128,7 +128,7 @@ export function ChartAreaGradient({
           }}
         />
         <YAxis
-          yAxisId="heart_rate"
+          yAxisId="heartRate"
           orientation="right"
           tickLine={false}
           axisLine={false}
@@ -168,12 +168,12 @@ export function ChartAreaGradient({
           <linearGradient id="fillHeartrate" x1="0" y1="0" x2="0" y2="1">
             <stop
               offset="10%"
-              stopColor="var(--color-heart_rate)"
+              stopColor="var(--color-heartRate)"
               stopOpacity={0.6}
             />
             <stop
               offset="90%"
-              stopColor="var(--color-heart_rate)"
+              stopColor="var(--color-heartRate)"
               stopOpacity={0.01}
             />
           </linearGradient>
@@ -214,14 +214,14 @@ export function ChartAreaGradient({
             />
           </linearGradient>
         </defs>
-        {show.heart_rate && (
+        {show.heartRate && (
           <Area
-            dataKey="heart_rate"
-            yAxisId="heart_rate"
+            dataKey="heartRate"
+            yAxisId="heartRate"
             type="natural"
             fill="url(#fillHeartrate)"
             fillOpacity={0.5}
-            stroke="var(--color-heart_rate)"
+            stroke="var(--color-heartRate)"
             stackId="a"
           />
         )}

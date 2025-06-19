@@ -24,17 +24,13 @@
     <maven.compiler.release>21</maven.compiler.release>
 
     <gc-core.version>1.0.1-SNAPSHOT</gc-core.version>
-    <gc-app.version>1.0.0-SNAPSHOT</gc-app.version>
-    <gc-json.version>1.0.0-SNAPSHOT</gc-json.version>
     <spring-boot.version>3.5.0</spring-boot.version>
 
   </properties>
 
   <modules>
-    <module>gc-core-api</module>
-    <module>gc-json-api</module>
+    <!-- <module>gc-json-api</module> -->
     <!-- <module>gc-persistence</module> -->
-    <module>gc-app</module>
     <module>gc-main</module>
   </modules>
 
@@ -44,21 +40,6 @@
         <groupId>rocks.frick</groupId>
         <artifactId>gc-core</artifactId>
         <version>${gc-core.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>rocks.frick</groupId>
-        <artifactId>gc-core-api</artifactId>
-        <version>${gc-core.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>rocks.frick</groupId>
-        <artifactId>gc-app</artifactId>
-        <version>${gc-app.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>rocks.frick</groupId>
-        <artifactId>gc-json-api</artifactId>
-        <version>${gc-json.version}</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>

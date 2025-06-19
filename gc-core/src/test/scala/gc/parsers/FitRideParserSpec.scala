@@ -1,7 +1,7 @@
 package gc.parsers
 
 import org.scalatest.funsuite.AnyFunSuite
-import gc.model.Ride
+import gc.model.Activity
 import java.io.FileInputStream
 import scala.io.Source
 
@@ -12,7 +12,7 @@ class FitRideParserSpec extends AnyFunSuite {
     val resourceStream = getClass.getResourceAsStream("/test.fit")
     // val inputStream = new FileInputStream("test-data/test.fit") // Pfad anpassen
 
-    val ride: Ride = parser.parseFromStream(resourceStream)
+    val ride: Activity = parser.parseFromStream(resourceStream)
     resourceStream.close()
 
 // RideSample(1725781019,Some(167),None,Some(0))

@@ -22,3 +22,9 @@ gc-main/.project
 .project
 gc-main/start
 gc-core/project/project/project
+gc-ui/.vite/deps
+
+node_modules
+dist
+dist-ssr
+*.local

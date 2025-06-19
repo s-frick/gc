@@ -6,7 +6,7 @@ type Point = { x: number; y: number };
 
 function generateSampleData(count: number): WorkoutSample[] {
   return Array.from({ length: count }, (_, i) => ({
-    heart_rate: 120 + Math.sin(i / 10) * 10,
+    heartRate: 120 + Math.sin(i / 10) * 10,
     power: 200 + Math.sin(i / 5) * 50,
     cadence: 85 + Math.cos(i / 15) * 5,
     timestamp: i * 1000,

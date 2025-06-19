@@ -12,7 +12,12 @@ Compile / unmanagedJars += baseDirectory.value / "lib" / "FitSdk" / "fit.jar"
 
 resolvers += "Local Maven Repository" at "file://" + Path.userHome.absolutePath + "/.m2/repository"
 libraryDependencies ++= Seq(
-  "rocks.frick" % "gc-core-api" % "1.0.1-SNAPSHOT" % "compile",
+  // "rocks.frick" % "gc-core-api" % "1.0.1-SNAPSHOT" % "compile",
+
+  "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5",
+  "org.slf4j" % "slf4j-api" % "2.0.13",
+
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.19.0",
   "com.typesafe.play" %% "play-json" % "2.10.0",  // Beispiel für JSON
   "org.scalatest" %% "scalatest" % "3.2.18" % Test
 )
@@ -28,10 +33,6 @@ assembly / assemblyMergeStrategy := {
 }
 
 // // Verwende das assembly-JAR beim publish
-// Compile / packageBin := assembly.value
+Compile / packageBin := assembly.value
 assembly / assemblyJarName := s"${name.value}-assembly-${version.value}.jar"
-// assembly / assemblyJarName := "gc-core-fat.jar"
 assembly / test := {}  // Überspringe Tests beim assembly
-
-// Optional: fit.jar in Assembly-JAR einfügen
-Compile / unmanagedJars += baseDirectory.value / "lib" / "FitSdk" / "fit.jar"

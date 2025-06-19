@@ -1,13 +1,15 @@
 package gc.parsers
 
-import gc.model._
 import com.garmin.fit._
 import java.io.InputStream
 import scala.collection.mutable.ListBuffer
+import gc.model.FileID
+import gc.model.UserProfile
+import gc.model.ActivitySample
 
 class FitRideParser extends RideParser {
 
-  override def parseFromStream(inputStream: InputStream): Ride = {
+  override def parseFromStream(inputStream: InputStream): gc.model.Activity = {
     val buf = inputStream.readAllBytes()
     val decoder = new Decode()
     if (!decoder.checkFileIntegrity(new ByteArrayDataInputStream(buf))) {
@@ -26,7 +28,9 @@ class FitRideParser extends RideParser {
     val ok = decoder.read(new ByteArrayDataInputStream(buf), mesgBroadcaster, mesgBroadcaster)
     if (ok) { printf("Successfully decoded FIT file.\n") } else { printf("Failure decoding FIT file.") }
 
-    Ride(
+    gc.model.Activity(
+      id = null,
+      name = null,
       samples = listener.samples.toSeq, 
       source = "fit", 
       fileID = listener.fileId, 
@@ -38,7 +42,7 @@ class FitRideParser extends RideParser {
 class FitListener extends FileIdMesgListener, UserProfileMesgListener, DeviceInfoMesgListener, MonitoringMesgListener, RecordMesgListener, DeveloperFieldDescriptionListener {
   var fileId:      Option[FileID]         = None
   var userProfile: Option[UserProfile]    = None
-  val samples:     ListBuffer[RideSample] = ListBuffer[RideSample]()
+  val samples:     ListBuffer[ActivitySample] = ListBuffer[ActivitySample]()
 
   override def onMesg(msg: FileIdMesg): Unit = {
     fileId = Some(FileID(
@@ -52,11 +56,12 @@ class FitListener extends FileIdMesgListener, UserProfileMesgListener, DeviceInf
   }
 
   override def onMesg(msg: UserProfileMesg): Unit = {
+    val friendlyName = 
     userProfile = Some(UserProfile(
-      friendly_name  =  msg.getFriendlyName,
-      gender         =  msg.getGender.name,
-      weight         =  msg.getWeight.toFloat,
-      age            =  msg.getAge.toInt
+      friendly_name  =  Option(msg.getFriendlyName).filter(_.nonEmpty),
+      gender         =  Option(msg.getGender.name).filter(_.nonEmpty),
+      weight         =  Option(msg.getWeight.toFloat).filter(_ != 0),
+      age            =  Option(msg.getAge.toInt).filter(_ != 0)
     ))
   }
 
@@ -66,15 +71,15 @@ class FitListener extends FileIdMesgListener, UserProfileMesgListener, DeviceInf
       .map(_ + 631065600L)              // convert to UNIX epoch
       .getOrElse(0L)
       
-    val sample = RideSample(
+    val sample = ActivitySample(
       timestamp     =  timestamp,
-      power         =  Option(msg.getPower).map(_.toInt),
-      cadence       =  Option(msg.getCadence).map(_.toInt),
-      speed         =  Option(msg.getSpeed).map(_.toFloat),
-      heartRate     =  Option(msg.getHeartRate).map(_.toInt),
-      distance      =  Option(msg.getDistance).map(_.toFloat),
-      positionLat   =  Option(msg.getPositionLat).map(toDecimalDegrees _),
-      positionLong  =  Option(msg.getPositionLong).map(toDecimalDegrees _)
+      power         =  Option(msg.getPower).filter(_ != 0).map(_.toInt),
+      cadence       =  Option(msg.getCadence).filter(_ != 0).map(_.toInt),
+      speed         =  Option(msg.getSpeed).filter(_ != 0).map(_.toFloat),
+      heartRate     =  Option(msg.getHeartRate).filter(_ != 0).map(_.toInt),
+      distance      =  Option(msg.getDistance).filter(_ != 0).map(_.toFloat),
+      positionLat   =  Option(msg.getPositionLat).filter(_ != 0).map(toDecimalDegrees _),
+      positionLong  =  Option(msg.getPositionLong).filter(_ != 0).map(toDecimalDegrees _)
     )
 
     samples += sample
